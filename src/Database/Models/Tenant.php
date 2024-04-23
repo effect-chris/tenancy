@@ -34,6 +34,8 @@ class Tenant extends Model implements Contracts\Tenant
     protected $primaryKey = 'id';
     protected $guarded = [];
 
+    protected $cleanTenantKey = true;
+    
     public function getTenantKeyName(): string
     {
         return 'id';
@@ -41,7 +43,13 @@ class Tenant extends Model implements Contracts\Tenant
 
     public function getTenantKey()
     {
-        return $this->getAttribute($this->getTenantKeyName());
+        $tenantKey = $this->getAttribute($this->getTenantKeyName());
+
+        if (! $this->cleanTenantKey) {
+            return $tenantKey;
+        }
+        
+        return preg_replace('![^'.preg_quote('-').'\pL\pN\s]+!u', '', $tenantKey);
     }
 
     public function newCollection(array $models = []): TenantCollection
